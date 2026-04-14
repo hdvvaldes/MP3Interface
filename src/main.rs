@@ -1,8 +1,12 @@
 
-mod data_miner;
+mod controller;
+mod ui;
 
-mod song_repo;
+use controller::Player;
 
 fn main() {
-    println!("Hello, world!");
+    let mp3_player = Player::new("TUI");
+    mp3_player.start();
+    let e_code:u8 = mp3_player.run();
+    mp3_player.close(e_code);
 }
