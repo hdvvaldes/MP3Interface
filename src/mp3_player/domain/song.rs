@@ -1,3 +1,12 @@
 
 
-impl 
+pub struct Song {
+
+
+
+}
+
+impl Song {
+
+
+}

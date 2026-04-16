@@ -1,4 +1,7 @@
-use crate::domain::song;
+use crate::mp3_player::domain::Song;
+use crate::mp3_player::data::util_files::bfs_directory;
+use walkdir::WalkDir;
+
 
 pub struct Miner {
     _path_data : Vec<String>,
@@ -6,19 +9,10 @@ pub struct Miner {
 
 impl Miner {
 
-    pub fn new(dir:&String) -> Self {
+    pub fn new(root:&String) -> Self {
         return Self { 
-            _path_data: vec![dir.to_string()],
+            _path_data: bfs_directory(root),
         }
-    }
-
-    /*
-     * Recollects all music path files 
-     */
-
-    pub fn start() -> Iter<Song> {
-
-
     }
 
     /* 
@@ -33,12 +27,36 @@ impl Miner {
         return ;
     }
 
-    pub fn hasNext() -> bool {
-        return true;
-    }
+}
 
+fn get_files(root: &String) -> Vec<String> {
+    let mut files = Vec::new();
+    for entry in WalkDir::new(root).into_iter() {
+        match entry {
+            Ok(dir) => files.push(dir.file_type),
+            _ => return vec![]
+        } 
+    }
+    files
+}
+
+struct MinerIter;
+
+type InvalidSongs = String;
+
+impl Iterator for MinerIter {
+    type Item = Song;
+    
+    fn next(&mut self) -> Option<Self::Item> {
+        
+    }
 }
 
 impl IntoIterator for Miner  {
     type Item = Song; 
+    type IntoIter = MinerIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        
+    }
 }
