@@ -1,10 +1,7 @@
-
-
-use std::collections::binary_heap::Iter;
-
+use crate::domain::song;
 
 pub struct Miner {
-    _path_data : Vec<String>
+    _path_data : Vec<String>,
 }
 
 impl Miner {
@@ -40,4 +37,8 @@ impl Miner {
         return true;
     }
 
+}
+
+impl IntoIterator for Miner  {
+    type Item = Song; 
 }

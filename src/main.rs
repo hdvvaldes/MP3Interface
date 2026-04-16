@@ -1,6 +1,7 @@
 
 mod controller;
 mod ui;
+mod data;
 
 use controller::Player;
 
