@@ -1,4 +1,3 @@
-
 use crate::ui::{PlayerView, TUIView, GUIView}; // Make sure to import your views
 use crate::controller::AppState;
 
