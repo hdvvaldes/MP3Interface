@@ -1,6 +1,5 @@
-
-use crate::ui::PlayerView;
-use crate::controller::AppState
+use crate::mp3_player::ui::PlayerView;
+use crate::mp3_player::controller::AppState;
 
 pub struct GUIView;
 

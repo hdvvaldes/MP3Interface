@@ -1,4 +1,4 @@
-use crate::controller::AppState;
+use crate::mp3_player::controller::AppState;
 
 pub trait PlayerView {
     fn render(&mut self, state: &AppState);

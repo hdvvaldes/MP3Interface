@@ -1,5 +1,5 @@
-use crate::ui::view_api::PlayerView;
-use crate::controller::AppState;
+use crate::mp3_player::ui::view_api::PlayerView;
+use crate::mp3_player::controller::AppState;
 
 pub struct TUIView;
 

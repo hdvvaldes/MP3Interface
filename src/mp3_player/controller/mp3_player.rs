@@ -1,5 +1,6 @@
-use crate::ui::{PlayerView, TUIView, GUIView}; // Make sure to import your views
-use crate::controller::AppState;
+use crate::mp3_player::ui::{PlayerView, TUIView, GUIView}; 
+use crate::mp3_player::controller::AppState;
+use crate::mp3_player::controller::AppState::NON_STARTED;
 
 pub struct Player {
     _view: Box<dyn PlayerView>, 
@@ -39,7 +40,7 @@ impl Player {
 
     pub fn close(&self, exit_code:u8){
         match exit_code {
-            _ =>   
+            _ => ()
         }
     }
 
