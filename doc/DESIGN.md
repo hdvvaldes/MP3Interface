@@ -72,11 +72,20 @@ classDiagram
     IntoIterator <|.. Miner
 
     class Miner~Song~ {
-        -String root
+        -PathBuf miner_root 
         +new(data_dir: String)
-        -get_tags(path_file: String) Song
+        +start() MinerIter
+        +root() &Path
     }
 
+    class MinerIter~Result~ {
+        -PathBuf[] paths
+        -usize current
+        +new(path_files: PathBuf[])
+        +size() usize
+        -read_tags() Option<Song>
+    }
+    
     class IntoIterator{
         <<Trait>>
         -Type Item 
@@ -84,12 +93,6 @@ classDiagram
         -into_iter() IntoIter
     }
 
-    class MinerIter~Result~ {
-        -String[] _paths
-        +new(files: String[])
-        +size()
-    }
-    
     class Iterator {
         <<Trait>>  
         -Type Item
