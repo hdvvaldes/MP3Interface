@@ -3,50 +3,27 @@
 //! This module provides an iterator-based API to scan directories for MP3 files
 //! and extract their metadata tags.
 
+use std::{path::{Path, PathBuf}};
+
 use domain::Song;
 use walkdir::WalkDir;
 use id3::{Tag, TagLike};
-
-/// Error type for tag extraction failures.
-#[derive(Debug)]
-pub enum TagError {
-    /// Failed to read or parse the MP3 file.
-    Parse(String),
-    /// The file does not contain valid ID3 tags.
-    NoTags(String),
-    /// File I/O error.
-    Io(std::io::Error),
-}
-
-impl std::fmt::Display for TagError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            TagError::Parse(msg) => write!(f, "Parse error: {}", msg),
-            TagError::NoTags(path) => write!(f, "No tags found in: {}", path),
-            TagError::Io(err) => write!(f, "I/O error: {}", err),
-        }
-    }
-}
-
-impl std::error::Error for TagError {}
 
 /// Main entry point for the miner.
 ///
 /// # Example
 ///
-/// ```ignore
 /// use miner::Miner;
 ///
 /// let miner = Miner::new("/path/to/music");
-/// for result in miner {
-///     match result {
-///         Ok(song) => println!("Found: {}", song.title),
-///         Err(path) => eprintln!("Invalid file: {}", path),
+/// for (song, path) in miner {
+///     match song {
+///         Some() => println!("Found: {}", song.title),
+///         _ => eprintln!("Invalid file: {}", path),
 ///     }
 /// }
-/// ```
 pub struct Miner {
-    root: String,
+    miner_root: PathBuf,
 }
 
 impl Miner {
@@ -55,29 +32,40 @@ impl Miner {
     /// # Arguments
     ///
     /// * `root` - Path to the directory to scan recursively
-    pub fn new(root: &str) -> Self {
-        Self {
-            root: root.to_string(),
+    pub fn new<P: AsRef<Path>>(root: P) -> Self {
+        Self { 
+            miner_root: root.as_ref().to_path_buf(), 
         }
     }
 
+    /// Returns root directory
+    ///
+    /// # Returns
+    ///
+    /// * `miner_root`
+    pub fn root(&self) -> &Path {
+        self.miner_root.as_path()
+    }
+    
+    /// Consumes the Miner and returns an iterator that walks the directory.
+    /// Scans `root` recursively and collects all file paths. The returned iterator
+    /// will yield `Ok(Song)` for valid MP3 files and `Err(path)` for non-MP3 files.
     pub fn start(self) -> MinerIter {
         self.into_iter()
     }
 
 }
-
 /// Iterator for yielding songs from a directory scan.
 ///
 /// Returns `Ok(Song)` for valid MP3 files or `Err(String)` for invalid paths.
 pub struct MinerIter {
-    paths: Vec<String>,
+    paths: Vec<PathBuf>,
     current: usize,
 }
 
 impl MinerIter {
     /// Creates a new iterator from a list of file paths.
-    pub fn new(path_files: Vec<String>) -> Self {
+    pub fn new(path_files: Vec<PathBuf>) -> Self {
         Self {
             paths: path_files,
             current: 0,
@@ -103,7 +91,9 @@ impl MinerIter {
     /// * `Some(Song)` - If tags were successfully extracted
     /// * `None` - If there was an error parsing tags
     ///
-    fn read_tags(path_file: &str) -> Option<Song> {
+    fn read_tags(&self) -> Option<Song> {
+
+        let path_file = &self.paths[self.current];
         let tag = Tag::read_from_path(path_file).ok()?;
         let title = 
             tag.title().unwrap_or("Unknown Title").to_string();
@@ -121,25 +111,21 @@ impl MinerIter {
         })  
     }
 }
+type SongPath = String;
 
-/// Type alias for iterator results: Song on success, path string on invalid file.
-type InvalidPath = String;
+/// Type alias for iterator results.
+/// First entry is None if tags can't be read
+type MinerSongs = (Option<Song>, SongPath);
 
 impl Iterator for MinerIter {
-    type Item = Result<Song, InvalidPath>;
+    type Item = MinerSongs;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.current >= self.paths.len() {
-            return None;
-        }
-        let current_file=&self.paths[self.current];
+        let current_file = self.paths.
+            get(self.current)?.to_string_lossy().into_owned();
+        let song_opt = self.read_tags();
         self.current+=1;
-        let res = 
-            match MinerIter::read_tags(current_file) {
-            Some(song) => Ok(song),
-            None => Err(current_file.to_string())
-            };
-        Option::Some(res)
+        Some((song_opt, current_file))
     }
 }
 
@@ -147,24 +133,18 @@ impl Iterator for MinerIter {
 // NOTE Make the process so it can iterate over levels in the 
 // root directory to organize the songs, as the user wants. Use a tree?.
 impl IntoIterator for Miner {
-    type Item = Result<Song, InvalidPath>;
+    type Item = MinerSongs;
     type IntoIter = MinerIter;
 
-    /// Consumes the Miner and returns an iterator that walks the directory.
-    ///
-    /// Scans `root` recursively and collects all file paths. The returned iterator
-    /// will yield `Ok(Song)` for valid MP3 files and `Err(path)` for non-MP3 files.
+    /// Identical to Miner::start()
     fn into_iter(self) -> Self::IntoIter {
         let mut paths = Vec::new();
-        for entry in WalkDir::new(&self.root).into_iter().filter_map(|e| e.ok()) {
-            let path = entry.path();
+        for entry in WalkDir::new(&self.miner_root).into_iter().filter_map(|e| e.ok()) {
+            let path = entry.into_path();
             if path.is_file() {
-                if let Some(path_str) = path.to_str() {
-                    paths.push(path_str.to_string());
-                }
+                paths.push(path)
             }
         }
-
         MinerIter { paths, current: 0 }
     }
 }
