@@ -5,7 +5,7 @@
 
 use domain::Song;
 use walkdir::WalkDir;
-use id3::Tag;
+use id3::{Tag, TagLike};
 
 /// Error type for tag extraction failures.
 #[derive(Debug)]
@@ -104,11 +104,21 @@ impl MinerIter {
     /// * `None` - If there was an error parsing tags
     ///
     fn read_tags(path_file: &str) -> Option<Song> {
-        let tag = Tag::read_from_path(path_file);
-        tag. 
-
-            
-
+        let tag = Tag::read_from_path(path_file).ok()?;
+        let title = 
+            tag.title().unwrap_or("Unknown Title").to_string();
+        let artist = 
+            tag.artist().unwrap_or("Unknown Artist").to_string();
+        let album = tag.album().unwrap_or("Unknown Album").to_string();
+        let year = tag.year().map(|i| i.to_string()); 
+        let genre = tag.genre().map(|g| g.to_string());
+        Some(Song {
+            title,
+            artist,
+            album,
+            year,
+            genre,
+        })  
     }
 }
 
