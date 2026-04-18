@@ -1,3 +1,1 @@
-
-mod song;
-pub use song::Song;
+pub use domain::Song;

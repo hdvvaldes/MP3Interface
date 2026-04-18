@@ -1,4 +1,3 @@
-
 mod mp3_player;
 
 use mp3_player::App;

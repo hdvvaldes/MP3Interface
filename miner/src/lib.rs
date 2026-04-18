@@ -1,4 +1,4 @@
-use crate::mp3_player::domain::Song;
+use domain::Song;
 use walkdir::WalkDir;
 
 pub struct Miner {
@@ -13,9 +13,14 @@ impl Miner {
     }
 
     fn get_tags(path_file: &str) -> Song {
-        // Placeholder for actual ID3 tag extraction
-        // For now, it returns an empty Song (as defined in domain/song.rs)
-        Song {}
+        use std::path::Path;
+        let path = Path::new(path_file);
+        let title = path
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .unwrap_or("Unknown")
+            .to_string();
+        Song::new(title, path_file.to_string())
     }
 }
 
@@ -75,10 +80,7 @@ impl IntoIterator for Miner {
             }
         }
 
-        MinerIter {
-            paths,
-            current: 0,
-        }
+        MinerIter { paths, current: 0 }
     }
 }
 

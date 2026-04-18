@@ -64,7 +64,8 @@ classDiagram
     }
 ```
 
-### Model
+### Miner
+
 ```mermaid
 classDiagram
     Iterator <|.. MinerIter
@@ -94,4 +95,31 @@ classDiagram
         -Type Item
         -next() Item
     }
+```
+
+### Database
+
+```mermaid
+classDiagram
+    class GDAO~T, ID~ {
+        <<Interface>>
+        - String db_path
+        + create()
+        + recoverById(ID id)
+        + update(T item) 
+        + delete()
+    }
+    
+    class BaseDAO~T, ID~ {
+        <<Abstract Class>>
+    }
+    
+    class PerformerDAO {
+
+    }
+
+    class SongDAO {
+
+    }
+
 ```
