@@ -64,22 +64,62 @@ classDiagram
     }
 ```
 
+### Miner
 
 ```mermaid
 classDiagram
-    class Miner {
-        -_path_data: Vec<String>
-        +new(dir: String) Miner
-        +start() Iter~Song~
-        +next_song() Song
-        +hasNext() bool
+    Iterator <|.. MinerIter
+    IntoIterator <|.. Miner
+
+    class Miner~Song~ {
+        -String root
+        +new(data_dir: String)
+        -get_tags(path_file: String) Song
     }
-    class SongRepo {
-        +path_info: String
-        +get_song_artist()
-        -get_songs() Vec~Songs~
-        +get_audio()
-        +add_songs(songs: Songs[])
-        +modify_song(song: Song)
+
+    class IntoIterator{
+        <<Trait>>
+        -Type Item 
+        -Type IntoIter
+        -into_iter() IntoIter
     }
+
+    class MinerIter~Result~ {
+        -String[] _paths
+        +new(files: String[])
+        +size()
+    }
+    
+    class Iterator {
+        <<Trait>>  
+        -Type Item
+        -next() Item
+    }
+```
+
+### Database
+
+```mermaid
+classDiagram
+    class GDAO~T, ID~ {
+        <<Interface>>
+        - String db_path
+        + create()
+        + recoverById(ID id)
+        + update(T item) 
+        + delete()
+    }
+    
+    class BaseDAO~T, ID~ {
+        <<Abstract Class>>
+    }
+    
+    class PerformerDAO {
+
+    }
+
+    class SongDAO {
+
+    }
+
 ```
