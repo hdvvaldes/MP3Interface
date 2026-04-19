@@ -6,7 +6,6 @@
 use std::path::{Path, PathBuf};
 
 use domain::Song;
-use domain::Artist::{Solo, Various};
 
 use walkdir::WalkDir;
 use id3::{Tag, TagLike};
@@ -96,22 +95,33 @@ impl MinerIter {
     fn read_tags(&self) -> Option<Song> {
         let file_path = &self.paths[self.current];
         let tag = Tag::read_from_path(file_path).ok()?;
-        let title = 
-            tag.title().unwrap_or("Unknown Title").to_string();
-        let album = 
-            tag.album().unwrap_or("Unknown Album").to_string();
+        let title = tag.title()
+            .map(String::from)
+            .unwrap_or_else(|| {
+                file_path
+                .file_stem()
+                .unwrap_or_default()
+                .to_string_lossy()
+                .into_owned()
+            });
+        let album = tag.album()
+            .map(String::from)
+            .unwrap_or_else(|| {
+                file_path
+                    .parent()
+                    .and_then(|p| p.file_name())
+                    .map(|f| f.to_string_lossy().into_owned())
+                    .unwrap_or_else(|| "Unknown Album".to_string()) 
+            });
         let track = tag.track().map(|t| t.to_string());
         let year = tag.year().map(|i| i.to_string()); 
         let genre = tag.genre().map(|g| g.to_string());
-        let artist = tag.artists().map(|s| {
-            if s.len() == 1 {
-                Solo(s[0].to_string())
-            } else {
-                let string_vec = s.iter().map(|artist| artist.to_string()).collect();
-                Various(string_vec)
-            }
-        });
-        Some(Song { title, artist, album, track, year, genre })
+        let artists = tag.artists()
+            .unwrap_or_default()
+            .into_iter()
+            .map(String::from)
+            .collect();
+        Some(Song { title, artists, album, track, year, genre })
     }
 }
 
