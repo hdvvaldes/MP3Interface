@@ -68,17 +68,21 @@ classDiagram
 
 ```mermaid
 classDiagram
+direction RL
+    note "Miner is iterable over MinerSong=(Option<Song>, PathBuf)"
     Iterator <|.. MinerIter
     IntoIterator <|.. Miner
+    MinerIter <.. Miner
+    
 
-    class Miner~Song~ {
+    class Miner {
         -PathBuf miner_root 
         +new(data_dir: String)
         +start() MinerIter
         +root() &Path
     }
 
-    class MinerIter~Result~ {
+    class MinerIter {
         -PathBuf[] paths
         -usize current
         +new(path_files: PathBuf[])
@@ -99,6 +103,7 @@ classDiagram
         -next() Item
     }
 ```
+
 
 ### Database
 
