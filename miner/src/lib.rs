@@ -3,9 +3,11 @@
 //! This module provides an iterator-based API to scan directories for MP3 files
 //! and extract their metadata tags.
 
-use std::{path::{Path, PathBuf}};
+use std::path::{Path, PathBuf};
 
 use domain::Song;
+use domain::Artist::{Solo, Various};
+
 use walkdir::WalkDir;
 use id3::{Tag, TagLike};
 
@@ -92,40 +94,40 @@ impl MinerIter {
     /// * `None` - If there was an error parsing tags
     ///
     fn read_tags(&self) -> Option<Song> {
-
-        let path_file = &self.paths[self.current];
-        let tag = Tag::read_from_path(path_file).ok()?;
+        let file_path = &self.paths[self.current];
+        let tag = Tag::read_from_path(file_path).ok()?;
         let title = 
             tag.title().unwrap_or("Unknown Title").to_string();
-        let artist = 
-            tag.artist().unwrap_or("Unknown Artist").to_string();
-        let album = tag.album().unwrap_or("Unknown Album").to_string();
+        let album = 
+            tag.album().unwrap_or("Unknown Album").to_string();
+        let track = tag.track().map(|t| t.to_string());
         let year = tag.year().map(|i| i.to_string()); 
         let genre = tag.genre().map(|g| g.to_string());
-        Some(Song {
-            title,
-            artist,
-            album,
-            year,
-            genre,
-        })  
+        let artist = tag.artists().map(|s| {
+            if s.len() == 1 {
+                Solo(s[0].to_string())
+            } else {
+                let string_vec = s.iter().map(|artist| artist.to_string()).collect();
+                Various(string_vec)
+            }
+        });
+        Some(Song { title, artist, album, track, year, genre })
     }
 }
-type SongPath = String;
 
 /// Type alias for iterator results.
 /// First entry is None if tags can't be read
-type MinerSongs = (Option<Song>, SongPath);
+type MinerSong = (Option<Song>, PathBuf);
 
 impl Iterator for MinerIter {
-    type Item = MinerSongs;
+    type Item = MinerSong;
 
     fn next(&mut self) -> Option<Self::Item> {
         let current_file = self.paths.
-            get(self.current)?.to_string_lossy().into_owned();
+            get(self.current)?;
         let song_opt = self.read_tags();
         self.current+=1;
-        Some((song_opt, current_file))
+        Some((song_opt, current_file.to_path_buf()))
     }
 }
 
@@ -133,7 +135,7 @@ impl Iterator for MinerIter {
 // NOTE Make the process so it can iterate over levels in the 
 // root directory to organize the songs, as the user wants. Use a tree?.
 impl IntoIterator for Miner {
-    type Item = MinerSongs;
+    type Item = MinerSong;
     type IntoIter = MinerIter;
 
     /// Identical to Miner::start()
