@@ -1,5 +1,5 @@
 [workspace]
 resolver="3"
-members = ["domain", "miner", "mp3_player"]
+members = ["compiler","domain", "miner", "mp3_player"]
 
 
