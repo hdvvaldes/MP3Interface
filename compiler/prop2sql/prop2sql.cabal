@@ -1,0 +1,58 @@
+cabal-version:      3.0
+name:               prop2sql
+
+version:            0.1.0.0
+
+synopsis: Compiler from propositional sentences to sql queries.
+
+-- A longer description of the package.
+-- description:
+
+license:            GPL-3.0-only
+
+license-file:       LICENSE
+
+author:             Hector Valdes
+
+maintainer:         hdvvaldes@gmail.com
+
+category:           Language
+build-type:         Simple
+
+extra-doc-files:    CHANGELOG.md
+
+-- Extra source files to be distributed with the package, such as examples, or a tutorial module.
+-- extra-source-files:
+
+common warnings
+    ghc-options: -Wall
+
+library
+    import:           warnings
+    exposed-modules:  Parser, Compiler
+    build-depends:    base ^>=4.18.3.0
+    hs-source-dirs:   src
+    default-language: Haskell2010
+
+executable prop2sql
+    import:           warnings
+    main-is:          Main.hs
+    build-depends:    base ^>=4.18.3.0,
+                      prop2sql
+    hs-source-dirs:   app
+    default-language: Haskell2010
+
+test-suite prop2sql-test
+    import:           warnings
+    type:             exitcode-stdio-1.0
+    main-is:          Spec.hs
+    other-modules:    UnitTests
+    hs-source-dirs:   test
+    build-depends:    base ^>=4.18.3.0,
+                      prop2sql,
+                      tasty,
+                      tasty-hunit,
+                      tasty-golden,
+                      bytestring,
+                      filepath
+    default-language: Haskell2010
