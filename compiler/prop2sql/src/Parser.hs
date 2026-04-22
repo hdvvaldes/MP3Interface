@@ -1,7 +1,8 @@
 module Parser where 
 
 import Data.Text as Text
-import Domain
+import Text.Megaparsec (Parsec)
+import Data.Void (Void)
 
-lexer :: Text -> [Token]
-lexer text = undefined
+type Parser = Parsec Void Text
+
