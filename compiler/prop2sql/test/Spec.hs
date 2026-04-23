@@ -1,43 +1,17 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 import Test.Tasty
-import Test.Tasty.Golden
-import System.FilePath ((</>), replaceExtension)
-import qualified Data.ByteString.Lazy as BSL
-import qualified Data.ByteString.Lazy.Char8 as BSL8
-
-import UnitTests (unitTests)
--- import Compiler (compileToSql) -- Import your actual compilation function here
+import Test.Tasty.HUnit
+import Compiler (prop2sql)
 
 main :: IO ()
-main = defaultMain tests
+main = defaultMain unitTests
 
-tests :: TestTree
-tests = testGroup "prop2sql Test Suite"
-  [ unitTests
-  , goldenTests
-  ]
+unitTests :: TestTree
+unitTests = testGroup "Unit Tests" 
+  [andTest]
 
-goldenTests :: TestTree
-goldenTests = testGroup "Golden Tests (Integration)"
-  [ -- Add your test files here (without the extensions)
-    mkGoldenTest "test/integration/simple_and"
-  , mkGoldenTest "test/integration/complex_nested"
-  ]
+andTest :: TestTree 
+andTest = testCase "Basic And Proposition" $ 
+  prop2sql "BONES: A AND B" @?= "SELECT * FROM BONES WHERE (A AND B) OR (B AND A);"
 
--- | Helper to wire up a golden test automatically
-mkGoldenTest :: FilePath -> TestTree
-mkGoldenTest baseName =
-  let propFile   = baseName ++ ".prop"
-      goldenFile = baseName ++ ".sql.golden"
-      
-      -- The action that executes your compiler
-      runCompiler = do
-        input <- readFile propFile
-        -- REPLACE THIS with your actual compiler function:
-        -- let output = compileToSql input 
-        let output = "SELECT * FROM dummy;\n" 
-        
-        return $ BSL8.pack output
-        
-  in goldenVsString baseName goldenFile runCompiler

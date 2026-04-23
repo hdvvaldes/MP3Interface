@@ -1,7 +1,7 @@
 module Main where
 
-import Controller (runApp, UserInterface (TUI))
+import System.Environment (getArgs)
+import Controller (runApp)
 
 main :: IO ()
-main = do
-    runApp TUI
+main = getArgs >>= runApp
