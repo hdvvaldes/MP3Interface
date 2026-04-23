@@ -1,4 +1,7 @@
 module Main where
 
+import Controller (runApp, UserInterface (TUI))
+
 main :: IO ()
-main = putStrLn "Hello, Haskell!"
+main = do
+    runApp TUI

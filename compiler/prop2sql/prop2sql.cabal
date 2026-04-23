@@ -27,21 +27,33 @@ extra-doc-files:    CHANGELOG.md
 common warnings
     ghc-options: -Wall
 
-library
-    import:           warnings
-    exposed-modules:  Parser, Compiler, Domain
-    build-depends:    base ^>=4.18.3.0,
-                      text,
-                      megaparsec >=9
-    hs-source-dirs:   src
-    default-language: Haskell2010
-
 executable prop2sql
     import:           warnings
     main-is:          Main.hs
+    other-modules:    Controller
     build-depends:    base ^>=4.18.3.0,
-                      prop2sql
+                      transformers >=0.6,
+                      prop2sql-model,
+                      text,
     hs-source-dirs:   app
+    default-language: Haskell2010
+
+library prop2sql-model
+    import:           warnings
+    exposed-modules:  Compiler, Domain
+    build-depends:    base ^>=4.18.3.0,
+                      text,
+                      megaparsec >=9
+    hs-source-dirs:   model
+    default-language: Haskell2010
+
+library prop2sql-TUI
+    import:           warnings
+    exposed-modules:  TUI
+    build-depends:    base ^>=4.18.3.0,
+                      text,
+                      megaparsec >=9
+    hs-source-dirs:   TUI
     default-language: Haskell2010
 
 test-suite prop2sql-test
