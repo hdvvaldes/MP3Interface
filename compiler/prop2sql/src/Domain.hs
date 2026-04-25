@@ -1,5 +1,7 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Domain(
-  Prop,
+  Prop(..),
   SQLTable
 )where
 
