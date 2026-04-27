@@ -2,11 +2,13 @@
 
 module Domain(
   Prop(..),
-  SQLTable
+  SQLTable,
+  SQLQuery
 )where
 
 import Data.Text as Text
 type SQLTable = Text
+type SQLQuery= Text
 
 data Prop
   = VAR Text
