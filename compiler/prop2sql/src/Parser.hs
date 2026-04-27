@@ -2,21 +2,19 @@
 
 module Parser
 (
-  Parser
+  Parser,
+  parseInput,
 ) where 
 
-import Text.Megaparsec (Parsec, MonadParsec (takeWhile1P, takeWhileP), (<|>))
+import Text.Megaparsec (Parsec, MonadParsec (takeWhile1P, takeWhileP), empty)
 import qualified Text.Megaparsec.Char.Lexer as L
 import Data.Char (isAlpha, isAlphaNum)
-import Data.Text as T
+import qualified Data.Text as T
 import Domain (SQLTable, Prop(DISY, VAR))
 import Data.Void (Void)
 import Text.Megaparsec.Char (space1)
 
-type Parser = Parsec Void Text
-
-parse :: Text
-parse = undefined
+type Parser = Parsec Void T.Text
 
 parseInput :: Parser (SQLTable, Prop)
 parseInput = do
@@ -53,19 +51,4 @@ identifyOp = do
     
 parseTerm :: Parser Prop
 parseTerm = undefined
-
-parseDisy :: Parser (Prop -> Prop -> Prop)
-parseDisy = do 
-    some <- symbol "OR" <|> symbol "->" 
-    return DISY
-
-
-parseConj :: Parser Prop
-parseConj = do
-    left <- parseTerm
-    _ <- symbol "AND"
-    right <- parseTerm
-    return $ CONJ left right
-
-  
 
