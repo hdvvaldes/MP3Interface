@@ -6,15 +6,31 @@ module Parser
   parseInput,
 ) where 
 
-import Text.Megaparsec (Parsec, MonadParsec (takeWhile1P, takeWhileP), empty, between, (<|>))
+import Text.Megaparsec (Parsec, MonadParsec (takeWhile1P, takeWhileP), empty, between, (<|>), optional)
 import qualified Text.Megaparsec.Char.Lexer as L
 import Data.Char (isAlpha, isAlphaNum)
 import qualified Data.Text as T
-import Domain (SQLTable, Prop(DISY, VAR))
+import Domain (SQLTable, Prop(..))
 import Data.Void (Void)
-import Text.Megaparsec.Char (space1, string)
+import Text.Megaparsec.Char (space1, string')
+
+-- S -> (P) | P
+-- P -> VB | neg S
+-- B -> AND S | OR S | e*
+-- V -> _identifier_
+
+-- identifier : ( letter | _ ) (letter | num | _)+
 
 type Parser = Parsec Void T.Text
+
+sc :: Parser ()
+sc = L.space space1 empty empty
+
+symbol :: T.Text -> Parser T.Text
+symbol = L.symbol sc
+
+lexeme :: Parser a -> Parser a
+lexeme = L.lexeme sc
 
 parseInput :: Parser (SQLTable, Prop)
 parseInput = do
@@ -23,14 +39,8 @@ parseInput = do
   prop <- parseProp
   return (table,prop)
 
-sc :: Parser ()
-sc = L.space space1 empty empty
-
-symbol :: T.Text -> Parser T.Text
-symbol = L.symbol sc
-
 parseID :: Parser T.Text
-parseID = do
+parseID = lexeme $ do
     firstPart <- takeWhile1P (Just "letter or underscore") 
       (\c -> isAlpha c || c == '_')
     restPart  <- takeWhileP (Just "alphanumeric or underscore") 
@@ -38,17 +48,29 @@ parseID = do
     return (firstPart <> restPart)
 
 parseProp :: Parser Prop
-parseProp = parens parseProp <|> parseVar
+parseProp = parens parseTerm <|> parseTerm
 
-parens :: Parser a -> Parser a
-parens = between (string "(") (string ")")
+parseTerm :: Parser Prop
+parseTerm = do
+    left <- parseNeg <|> parseVar
+    maybeOp <- lexeme $ optional (parseAND <|> parseOR)
+    case maybeOp of 
+      Nothing -> return left
+      Just op -> op left <$> parseProp
 
 parseVar :: Parser Prop
 parseVar = VAR <$> parseID
 
--- | Return a constructor for the parsed Prop
-identifyOp :: Parser Prop
-identifyOp = do 
-    some <- foldMap symbol ["AND", "OR"]
-    return $ VAR "some"
+parseNeg :: Parser Prop
+parseNeg = string' "NEG" >> NEG <$> parseProp
+
+parseAND :: Parser (Prop -> Prop -> Prop)
+parseAND = string' "AND" >> return CONJ
+
+parseOR :: Parser (Prop -> Prop -> Prop)
+parseOR  = string' "OR" >> return DISY
+
+parens :: Parser a -> Parser a
+parens = between (symbol "(") (symbol ")")
+
 
