@@ -1,12 +1,9 @@
 
 pub enum AppState {
-    NON_STARTED,
-
-    Home,
-    Playing { track_id: usize, is_paused: bool },
-    Search { query: String },
-    Library,
-    // Your future mining process fits perfectly here:
+    Init,
     MiningTags { scanned: usize, total: usize, current_file: String },
+    Library,
+    Search { query: String },
+    Playing { track_id: usize, is_paused: bool },
 }
 

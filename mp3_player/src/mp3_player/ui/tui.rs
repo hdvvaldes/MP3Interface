@@ -13,8 +13,12 @@ impl TUIView {
 
 impl PlayerView for TUIView {
 
-    fn render(&mut self, state: &AppState) {
+    fn setup(&mut self) -> Result<(), String> {
         
+    }
+
+    fn render(&mut self, state: &AppState) {
+
     } 
 
     fn display_error(&self, reason: &str) {
@@ -25,6 +29,11 @@ impl PlayerView for TUIView {
     fn display_message(&self, msg: &str) {
         
     }
+
+    fn teardown(&mut self) -> Result<(),String> {
+        
+    }
+
 }
 
 
