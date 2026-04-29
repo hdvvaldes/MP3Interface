@@ -10,19 +10,6 @@ use domain::Song;
 use walkdir::WalkDir;
 use id3::{Tag, TagLike};
 
-/// Main entry point for the miner.
-///
-/// # Example
-///
-/// use miner::Miner;
-///
-/// let miner = Miner::new("/path/to/music");
-/// for (song, path) in miner {
-///     match song {
-///         Some() => println!("Found: {}", song.title),
-///         _ => eprintln!("Invalid file: {}", path),
-///     }
-/// }
 pub struct Miner {
     miner_root: PathBuf,
 }
