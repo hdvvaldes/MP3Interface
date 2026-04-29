@@ -1,6 +1,7 @@
 use crate::mp3_player::ui::view_api::PlayerView;
 use crate::mp3_player::controller::AppState;
 
+
 pub struct TUIView;
 
 impl TUIView {
@@ -35,6 +36,3 @@ impl PlayerView for TUIView {
     }
 
 }
-
-
-

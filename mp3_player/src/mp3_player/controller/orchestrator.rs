@@ -25,18 +25,16 @@ impl Orchestrator{
 
     pub fn start(&mut self) {
         self.view.setup();
-
-
     }
 
     pub fn run(&mut self) -> u8 {
-        self.view.render(&self.state);
+        let mut running = true;
+        while running {
+            self.view.render(&self.state);
+
+        }
          
         0
-    }
-
-    fn is_running(&self) -> bool {
-        false
     }
 
     pub fn close(&self, exit_code:u8){

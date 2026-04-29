@@ -1,4 +1,3 @@
-
 mod view_api;
 pub use view_api::PlayerView;
 
