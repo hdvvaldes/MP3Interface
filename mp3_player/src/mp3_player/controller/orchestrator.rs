@@ -8,6 +8,7 @@ use crate::mp3_player::ui::PlayerAction;
 pub struct Orchestrator {
     view: Box<dyn PlayerView>, 
     state: AppState, 
+    music_playing: bool
 }
 
 impl Orchestrator {
@@ -22,6 +23,7 @@ impl Orchestrator {
         Orchestrator {
             view: selected_view,
             state: Init,
+            music_playing: false
         }
     }
 
@@ -29,9 +31,8 @@ impl Orchestrator {
         self.view.setup().map_err(|e| e.to_string())
     }
 
-    pub fn run(&mut self) -> u8 {
+    pub fn run(&mut self) {
         let mut running = true;
-        
         while running {
             if let Err(e) = self.view.render(&self.state) {
                 self.view.display_error(&e);
@@ -48,7 +49,7 @@ impl Orchestrator {
                 PlayerAction::None => ()
             }
         }
-        0
+        self.close(0);
     }
 
     fn play_song(&self, song: Song) {
@@ -80,9 +81,7 @@ impl Orchestrator {
     }
 
     fn toggle_pause(&mut self) {
-        if let AppState::Playing { track_id, is_paused } = self.state {
-            self.state = AppState::Playing { track_id, is_paused: !is_paused };
-        }
+        self.music_playing = !self.music_playing;
     }
 
     pub fn close(&mut self, exit_code: u8) {

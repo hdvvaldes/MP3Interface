@@ -39,20 +39,25 @@ impl TUIView {
             KeyCode::Char('p') | KeyCode::Char('P') => 
                 return PlayerAction::Previous,
             KeyCode::Char(' ') => return PlayerAction::Pause,
-            KeyCode::Enter => return PlayerAction::Play(self.build_song()),
+            KeyCode::Enter => 
+                return PlayerAction::Play(self.selected_song()),
             KeyCode::Esc => return PlayerAction::Quit,
             _ => return PlayerAction::None,
         }
     }
 
-    fn build_song(&self) -> Song {
-
+    fn selected_song(&self) -> Song {
+        Song { title: String::new(),
+            artists: Vec::new(),
+            album: String::new(),
+            track: None,
+            year: None, 
+            genre: None }
     }
 
     fn get_query(&self) -> String {
         String::new()
     }
-
 
     fn get_artist_display(artists: &[String]) -> &str {
         artists.first().map(|s| s.as_str()).unwrap_or("Unknown")
@@ -77,24 +82,24 @@ impl PlayerView for TUIView {
     }
 
     fn render(&mut self, state: &AppState) -> Result<(), String> {
-        let mut terminal = self.terminal .ok_or(
+        let terminal = self.terminal.as_mut().ok_or(
             "The view has not been initialized")?;
         terminal.draw(|f| {
-            let area = f.area();
             match state {
                 AppState::Init => 
                     tui_renderer::render_init(f),
-                m@AppState::MiningTags {..} =>  
-                    tui_renderer::render_mining(f, m),
+                AppState::MiningTags {scanned, total, current_file} =>  
+                    tui_renderer::render_mining (
+                        f, *scanned, *total, current_file.clone()),
                 AppState::Library => 
-                    tui_renderer::render_library(f),
+                    tui_renderer::render_library(f, &self.current_songs),
                 AppState::Search {..} => 
                     tui_renderer::render_search(f),
-                AppState::Playing{track_id, is_paused} =>
-                    tui_renderer::render_playing(f),
+                AppState::Playing{song, is_paused} =>
+                    tui_renderer::render_playing (
+                        f, song.clone(), *is_paused),
             }
         }).map(|_| ()).map_err(|e| e.to_string())
-
     }
 
     fn handle_events(&mut self) -> PlayerAction {
@@ -116,7 +121,8 @@ impl PlayerView for TUIView {
 
     fn teardown(&mut self) -> Result<(), String> {
         disable_raw_mode().map_err(|e| e.to_string())?;
-        execute!(std::io::stdout(), LeaveAlternateScreen, DisableMouseCapture)
+        execute!(
+            std::io::stdout(), LeaveAlternateScreen, DisableMouseCapture)
             .map_err(|e| e.to_string())?;
         Ok(())
     }
