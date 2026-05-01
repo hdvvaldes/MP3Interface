@@ -1,5 +1,5 @@
 mod view_api;
-pub use view_api::PlayerView;
+pub use view_api::{PlayerView, PlayerAction};
 
 mod gui;
 pub use gui::GUIView;
