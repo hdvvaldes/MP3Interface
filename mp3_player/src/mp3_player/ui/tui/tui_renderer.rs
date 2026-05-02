@@ -6,7 +6,7 @@ use ratatui::{
     Frame,
 };
 
-pub fn render_init(f: &mut Frame) {
+pub fn render_init(f: &mut Frame, path: &str) {
     let area = f.area();
     let paragraph = Paragraph::new("MP3 Player - Loading...")
         .block(Block::default().title("Init").borders(Borders::ALL));

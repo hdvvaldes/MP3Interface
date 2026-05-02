@@ -2,12 +2,13 @@ use ratatui::Terminal;
 use ratatui::backend::CrosstermBackend;
 
 use crossterm::{
-    event::{self, DisableMouseCapture, Event, KeyCode, KeyEvent, KeyEventKind},
+    event::{self, DisableMouseCapture, Event, KeyCode},
     execute,
-    terminal::{self, EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
+    terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
 
-use crate::mp3_player::ui::{tui::tui_renderer, view_api::{PlayerAction, PlayerView}};
+use super::tui_renderer;
+use crate::mp3_player::ui::view_api::{PlayerAction, PlayerView};
 use crate::mp3_player::controller::AppState;
 use crate::mp3_player::domain::Song;
 
@@ -67,8 +68,8 @@ impl PlayerView for TUIView {
             "The view has not been initialized")?;
         terminal.draw(|f| {
             match state {
-                AppState::Init => 
-                    tui_renderer::render_init(f),
+                AppState::Init{path} => 
+                    tui_renderer::render_init(f, path),
                 AppState::MiningTags {scanned, total, current_file} =>  
                     tui_renderer::render_mining (
                         f, *scanned, *total, current_file.clone()),
@@ -81,6 +82,22 @@ impl PlayerView for TUIView {
                         f, song.clone(), *is_paused),
             }
         }).map(|_| ()).map_err(|e| e.to_string())
+    }
+
+    fn handle_events(&mut self, _state: &AppState) -> PlayerAction {
+        if let Some(code) = self.user_keystrokes() {
+            match code {
+                KeyCode::Char('q') | KeyCode::Esc => PlayerAction::Quit,
+                KeyCode::Char(':') | KeyCode::Char('s') => PlayerAction::Search,
+                KeyCode::Char(' ') => PlayerAction::Pause,
+                KeyCode::Enter => PlayerAction::Play,
+                KeyCode::Char('n') => PlayerAction::Next,
+                KeyCode::Char('p') => PlayerAction::Previous,
+                _ => PlayerAction::None,
+            }
+        } else {
+            PlayerAction::None
+        }
     }
 
     fn user_keystrokes(&mut self) -> Option<KeyCode>  {

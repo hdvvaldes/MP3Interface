@@ -1,17 +1,16 @@
 use crossterm::event::KeyCode;
-use domain::Song;
 
 use crate::mp3_player::controller::AppState;
 
 pub enum PlayerAction {
-    Play(Song),
+    Play,
     Pause,
     Resume,
     Next,
     Previous,
-    Search(String),
+    Search,
     Quit,
-    Command(String),
+    Input(String),
     None,
 }
 
@@ -27,5 +26,6 @@ pub trait PlayerView {
     fn display_error(&self, reason: &str);
 
     fn teardown(&mut self) -> Result<(), String>;
-    
+
+    fn handle_events(&mut self, state: &AppState) -> PlayerAction;
 }

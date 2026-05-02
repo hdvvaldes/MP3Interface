@@ -1,7 +1,7 @@
 use domain::Song;
 
 pub enum AppState {
-    Init,
+    Init {path: String},
     MiningTags { scanned: usize, total: usize, current_file: String },
     Library,
     Search { query: String },

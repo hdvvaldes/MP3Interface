@@ -20,7 +20,7 @@ impl PlayerView for GUIView {
         Ok(())
     }
 
-    fn user_keystrokes() -> Option<KeyCode> {
+    fn user_keystrokes(&mut self) -> Option<KeyCode> {
         return None 
     }
 

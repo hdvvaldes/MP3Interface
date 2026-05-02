@@ -1,49 +1,35 @@
-use std::sync::mpsc;
-use std::thread;
+use std::sync::mpsc::Receiver;
 
-use domain::Song;
-
-use crate::mp3_player::ui::{PlayerView, TUIView, GUIView}; 
 use crate::mp3_player::controller::AppState;
-use crate::mp3_player::controller::AppState::{Init};
-use crate::mp3_player::ui::{PlayerAction, UIHandler};
+use crate::mp3_player::controller::AppState::Init;
+use crate::mp3_player::ui::{PlayerAction, PlayerView, TUIView};
 
 use miner::Miner;
 
 pub struct Orchestrator {
-    view: UIHandler,
-    player_action : Option<PlayerAction>, 
-    state: AppState, 
-    music_playing: bool
+    view: Box<dyn PlayerView>,
+    receiver: Option<Receiver<PlayerAction>>,
+    player_action: Option<PlayerAction>,
+    state: AppState,
+    music_playing: bool,
 }
 
 impl Orchestrator {
-
     pub fn new(view_opt: &str) -> Self {
-        let selected_view: Box<dyn PlayerView> = 
-            if view_opt == "TUI" {
-                Box::new(TUIView::new())
-            } else {
-                Box::new(GUIView::new())
-            };
+        let selected_view: Box<dyn PlayerView> = Box::new(TUIView::new());
         Orchestrator {
-            view: UIHandler::new(selected_view),
+            view: selected_view,
+            receiver: None,
             player_action: None,
-            state: Init,
-            music_playing: false
+            state: Init { path: String::new() },
+            music_playing: false,
         }
     }
 
     pub fn start(&mut self) -> Result<(), String> {
-        self.view.start();
-        let (tx, rx) = mpsc::channel::<PlayerAction>();
-        let handle = thread::spawn(|| self.view.run());
-
-        self.view.events()
-
-        let path = self.view.ask_user();
-        let miner = Miner::new();
-
+        self.view.setup()?;
+        self.view.render(&self.state)?;
+        let _miner = Miner::new("");
         Ok(())
     }
 
@@ -54,56 +40,39 @@ impl Orchestrator {
                 self.view.display_error(&e);
                 break;
             }
-            match self.view.handle_events() {
-                PlayerAction::Play(id) => self.play_song(id),
+
+            match self.view.handle_events(&self.state) {
+                PlayerAction::Search => self.search_song(),
+                PlayerAction::Play => self.play_song(),
                 PlayerAction::Pause => self.pause_song(),
                 PlayerAction::Resume => self.resume_song(),
                 PlayerAction::Next => self.next_song(),
                 PlayerAction::Previous => self.previous_song(),
-                PlayerAction::Search(s) => self.search_song(s),
                 PlayerAction::Quit => running = false,
+                PlayerAction::Input(_s) => (),
                 PlayerAction::None => (),
-                PlayerAction::Command(a) => self.evaluate_comm(),
             }
         }
         self.close();
     }
 
-    fn play_song(&self, song: Song) {
+    fn play_song(&self) {}
 
-    }
+    fn pause_song(&self) {}
 
-    fn pause_song(&self) {
+    fn resume_song(&self) {}
 
-    }
+    fn next_song(&self) {}
 
-    fn resume_song(&self) {
+    fn previous_song(&self) {}
 
-    }
-
-    fn next_song(&self) {
-
-    }
-
-    fn previous_song(&self) {
-
-    }
-
-    fn search_song(&self, prop: String) {
-
-    }
-
-    fn evaluate_comm(&self) {
-
-    }
-
+    fn search_song(&self) {}
 
     fn toggle_pause(&mut self) {
         self.music_playing = !self.music_playing;
     }
 
     fn close(&mut self) {
-        self.view.close_tui();
+        let _ = self.view.teardown();
     }
-
 }
