@@ -1,3 +1,5 @@
+use std::{cell::RefCell, rc::Rc};
+
 use ratatui::Terminal;
 use ratatui::backend::CrosstermBackend;
 
@@ -8,7 +10,7 @@ use crossterm::{
 };
 
 use super::tui_renderer;
-use crate::mp3_player::ui::view_api::{PlayerAction, PlayerView};
+use crate::mp3_player::ui::{ActionUI, view_api::{PlayerAction, PlayerView}};
 use crate::mp3_player::controller::AppState;
 use crate::mp3_player::domain::Song;
 
@@ -49,6 +51,32 @@ impl TUIView {
         self.current_songs = songs;
     }
 
+    pub fn text_input(buffer: &str) -> Box<dyn ActionUI> {
+        let buffer = Rc::new(RefCell::new(String::new()));
+        Box::new(move |code: KeyCode| {
+            let mut current_text = buffer.borrow_mut();
+            match code {
+                KeyCode::Char(c) => {
+                    current_text.push(c);
+                    PlayerAction::None
+                }
+
+                KeyCode::Backspace => {
+                    current_text.pop();
+                    PlayerAction::None
+                }
+
+                KeyCode::Enter => {
+                    let final_string = current_text.clone();
+                    current_text.clear();
+                    PlayerAction::Input(final_string)
+                }
+                _ => PlayerAction::None,
+            }
+        })
+    }
+
+
 }
 
 impl PlayerView for TUIView {
@@ -88,7 +116,7 @@ impl PlayerView for TUIView {
         if let Some(code) = self.user_keystrokes() {
             match code {
                 KeyCode::Char('q') | KeyCode::Esc => PlayerAction::Quit,
-                KeyCode::Char(':') | KeyCode::Char('s') => PlayerAction::Search,
+                KeyCode::Char(':')  => PlayerAction::Search,
                 KeyCode::Char(' ') => PlayerAction::Pause,
                 KeyCode::Enter => PlayerAction::Play,
                 KeyCode::Char('n') => PlayerAction::Next,
@@ -99,6 +127,7 @@ impl PlayerView for TUIView {
             PlayerAction::None
         }
     }
+
 
     fn user_keystrokes(&mut self) -> Option<KeyCode>  {
         if let Ok(Event::Key(key)) = event::read() {

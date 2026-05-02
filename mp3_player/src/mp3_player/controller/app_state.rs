@@ -4,7 +4,7 @@ pub enum AppState {
     Init {path: String},
     MiningTags { scanned: usize, total: usize, current_file: String },
     Library,
-    Search { query: String },
+    Searching { query: String },
     Playing { song: Song , is_paused: bool },
 }
 

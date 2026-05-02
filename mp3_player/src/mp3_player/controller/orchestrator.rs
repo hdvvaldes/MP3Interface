@@ -1,15 +1,11 @@
-use std::sync::mpsc::Receiver;
-
 use crate::mp3_player::controller::AppState;
-use crate::mp3_player::controller::AppState::Init;
-use crate::mp3_player::ui::{PlayerAction, PlayerView, TUIView};
+use crate::mp3_player::controller::AppState::{Init, Searching}
+use crate::mp3_player::ui::{ActionUI, PlayerAction, PlayerView, TUIView};
 
 use miner::Miner;
 
 pub struct Orchestrator {
     view: Box<dyn PlayerView>,
-    receiver: Option<Receiver<PlayerAction>>,
-    player_action: Option<PlayerAction>,
     state: AppState,
     music_playing: bool,
 }
@@ -40,8 +36,7 @@ impl Orchestrator {
                 self.view.display_error(&e);
                 break;
             }
-
-            match self.view.handle_events(&self.state) {
+            match self.get_handler().manage_press() {
                 PlayerAction::Search => self.search_song(),
                 PlayerAction::Play => self.play_song(),
                 PlayerAction::Pause => self.pause_song(),
@@ -54,6 +49,16 @@ impl Orchestrator {
             }
         }
         self.close();
+    }
+
+    fn get_handler(&self) -> Box<dyn ActionUI>{
+        match self.state {
+            Init { path } => TUIView::text_input(&path),
+            Searching { query } => TUIView::text_input(&query),
+            _ => TUIView::
+
+        }
+
     }
 
     fn play_song(&self) {}

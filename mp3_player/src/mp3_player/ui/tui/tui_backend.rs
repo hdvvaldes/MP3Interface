@@ -22,44 +22,18 @@ where
 }
 
 pub struct UIHandler {
-    visuals: Box<dyn PlayerView>,
     transmitter: Option<Sender<PlayerAction>>,
     actions: Box<dyn ActionUI>,
 }
 
 impl UIHandler {
-    pub fn new(view: Box<dyn PlayerView>) -> Self {
+    pub fn new() -> Self {
         UIHandler {
-            visuals: view,
             transmitter: None,
             actions: UIHandler::text_input(),
         }
     }
 
-    fn text_input() -> Box<dyn ActionUI> {
-        let buffer = Rc::new(RefCell::new(String::new()));
-        Box::new(move |code: KeyCode| {
-            let mut current_text = buffer.borrow_mut();
-            match code {
-                KeyCode::Char(c) => {
-                    current_text.push(c);
-                    PlayerAction::None
-                }
-
-                KeyCode::Backspace => {
-                    current_text.pop();
-                    PlayerAction::None
-                }
-
-                KeyCode::Enter => {
-                    let final_string = current_text.clone();
-                    current_text.clear();
-                    PlayerAction::Input(final_string)
-                }
-                _ => PlayerAction::None,
-            }
-        })
-    }
 
     pub fn start(&mut self) -> Result<(), String> {
         self.visuals.setup().map_err(|e| e.to_string())
