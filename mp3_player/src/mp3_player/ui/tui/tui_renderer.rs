@@ -69,7 +69,7 @@ pub fn render_library(f: &mut Frame, current_songs: &Vec<Song>) {
     let help = Paragraph::new("Controls:\n[Enter] Play\n[N] Next\n[P] Prev\n[S] Search\n[Q] Quit");
     f.render_widget(help, chunks[1]);
 }
-pub fn render_search(f: &mut Frame) {
+pub fn render_search(f: &mut Frame, query:&str) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
@@ -78,7 +78,6 @@ pub fn render_search(f: &mut Frame) {
         ])
         .split(f.area());
 
-    let query = "";
     let song = "";
 
     let search_prompt = Paragraph::new(format!("Search: {}", query))

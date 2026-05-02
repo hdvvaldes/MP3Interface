@@ -8,6 +8,9 @@ ratatui = "0.30.0"
 crossterm = "0.28.1"
 walkdir = "2.3"
 
-
 [dependencies.domain]
-path = "../domain"
+path= "../domain"
+
+[dependencies.miner]
+path= "../miner"
+

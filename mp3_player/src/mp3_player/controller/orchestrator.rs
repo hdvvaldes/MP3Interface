@@ -1,12 +1,18 @@
+use std::sync::mpsc;
+use std::thread;
+
 use domain::Song;
 
 use crate::mp3_player::ui::{PlayerView, TUIView, GUIView}; 
 use crate::mp3_player::controller::AppState;
 use crate::mp3_player::controller::AppState::{Init};
-use crate::mp3_player::ui::PlayerAction;
+use crate::mp3_player::ui::{PlayerAction, UIHandler};
+
+use miner::Miner;
 
 pub struct Orchestrator {
-    view: Box<dyn PlayerView>, 
+    view: UIHandler,
+    player_action : Option<PlayerAction>, 
     state: AppState, 
     music_playing: bool
 }
@@ -21,14 +27,24 @@ impl Orchestrator {
                 Box::new(GUIView::new())
             };
         Orchestrator {
-            view: selected_view,
+            view: UIHandler::new(selected_view),
+            player_action: None,
             state: Init,
             music_playing: false
         }
     }
 
     pub fn start(&mut self) -> Result<(), String> {
-        self.view.setup().map_err(|e| e.to_string())
+        self.view.start();
+        let (tx, rx) = mpsc::channel::<PlayerAction>();
+        let handle = thread::spawn(|| self.view.run());
+
+        self.view.events()
+
+        let path = self.view.ask_user();
+        let miner = Miner::new();
+
+        Ok(())
     }
 
     pub fn run(&mut self) {
@@ -46,10 +62,11 @@ impl Orchestrator {
                 PlayerAction::Previous => self.previous_song(),
                 PlayerAction::Search(s) => self.search_song(s),
                 PlayerAction::Quit => running = false,
-                PlayerAction::None => ()
+                PlayerAction::None => (),
+                PlayerAction::Command(a) => self.evaluate_comm(),
             }
         }
-        self.close(0);
+        self.close();
     }
 
     fn play_song(&self, song: Song) {
@@ -76,18 +93,17 @@ impl Orchestrator {
 
     }
 
-    fn quit(&self) {
+    fn evaluate_comm(&self) {
 
     }
+
 
     fn toggle_pause(&mut self) {
         self.music_playing = !self.music_playing;
     }
 
-    pub fn close(&mut self, exit_code: u8) {
-        let _ = self.view.teardown();
-        match exit_code {
-            _ => ()
-        }
+    fn close(&mut self) {
+        self.view.close_tui();
     }
+
 }

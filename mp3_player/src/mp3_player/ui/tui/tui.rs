@@ -27,25 +27,6 @@ impl TUIView {
         }
     }
 
-    // Move this to controller and implemente strategy pattern
-    fn manage_press(&self, key: KeyEvent) -> PlayerAction{
-        match key.code {
-            KeyCode::Char(':') => 
-                return PlayerAction::Search(self.get_query()),
-            KeyCode::Char('q') | KeyCode::Char('Q') => 
-                return PlayerAction::Quit,
-            KeyCode::Char('n') | KeyCode::Char('N') => 
-                return PlayerAction::Next,
-            KeyCode::Char('p') | KeyCode::Char('P') => 
-                return PlayerAction::Previous,
-            KeyCode::Char(' ') => return PlayerAction::Pause,
-            KeyCode::Enter => 
-                return PlayerAction::Play(self.selected_song()),
-            KeyCode::Esc => return PlayerAction::Quit,
-            _ => return PlayerAction::None,
-        }
-    }
-
     fn selected_song(&self) -> Song {
         Song { title: String::new(),
             artists: Vec::new(),
@@ -93,8 +74,8 @@ impl PlayerView for TUIView {
                         f, *scanned, *total, current_file.clone()),
                 AppState::Library => 
                     tui_renderer::render_library(f, &self.current_songs),
-                AppState::Search {..} => 
-                    tui_renderer::render_search(f),
+                AppState::Search {query} => 
+                    tui_renderer::render_search(f, query),
                 AppState::Playing{song, is_paused} =>
                     tui_renderer::render_playing (
                         f, song.clone(), *is_paused),
@@ -102,13 +83,12 @@ impl PlayerView for TUIView {
         }).map(|_| ()).map_err(|e| e.to_string())
     }
 
-    fn handle_events(&mut self) -> PlayerAction {
+    fn user_keystrokes(&mut self) -> Option<KeyCode>  {
         if let Ok(Event::Key(key)) = event::read() {
-            if key.kind == KeyEventKind::Press {
-                return self.manage_press(key)
-            }
+            return Some(key.code)
         }
-        PlayerAction::None
+        None
+
     }
 
     fn display_error(&self, reason: &str) {
@@ -126,4 +106,5 @@ impl PlayerView for TUIView {
             .map_err(|e| e.to_string())?;
         Ok(())
     }
+
 }

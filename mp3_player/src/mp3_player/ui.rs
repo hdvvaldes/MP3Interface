@@ -6,3 +6,4 @@ pub use gui::GUIView;
 
 mod tui;
 pub use tui::TUIView;
+pub use tui::UIHandler;

@@ -1,4 +1,6 @@
-use crate::mp3_player::ui::view_api::{PlayerView, PlayerAction};
+use crossterm::event::KeyCode;
+
+use crate::mp3_player::ui::view_api::{PlayerView};
 use crate::mp3_player::controller::AppState;
 
 pub struct GUIView;
@@ -15,12 +17,11 @@ impl PlayerView for GUIView {
     }
 
     fn render(&mut self, _state: &AppState) -> Result<(), String> {
-        // GUI rendering logic (e.g. using iced or egui)
         Ok(())
     }
 
-    fn handle_events(&mut self) -> PlayerAction {
-        PlayerAction::None
+    fn user_keystrokes() -> Option<KeyCode> {
+        return None 
     }
 
     fn display_error(&self, reason: &str) {
@@ -34,4 +35,6 @@ impl PlayerView for GUIView {
     fn teardown(&mut self) -> Result<(), String> {
         Ok(())
     }
+    
+
 }
