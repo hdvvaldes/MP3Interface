@@ -1,12 +1,6 @@
-
 mod view_api;
-pub use view_api::PlayerView;
-
-mod gui;
-pub use gui::GUIView;
+pub use view_api::{PlayerView, PlayerAction};
 
 mod tui;
 pub use tui::TUIView;
-
-
-
+pub use tui::ActionUI;

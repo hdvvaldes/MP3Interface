@@ -1,12 +1,10 @@
+use domain::Song;
 
 pub enum AppState {
-    NON_STARTED,
-
-    Home,
-    Playing { track_id: usize, is_paused: bool },
-    Search { query: String },
-    Library,
-    // Your future mining process fits perfectly here:
+    Init {path: String},
     MiningTags { scanned: usize, total: usize, current_file: String },
+    Library,
+    Searching { query: String },
+    Playing { song: Song , is_paused: bool },
 }
 
